@@ -3,38 +3,48 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-<h3>Generador de Contraseñas</h3>
-<label>Longitud de la contraseña:</label>
-<InputNumber @bind-Value="passwordLength" Min="5" Max="100" />
+<div class="container">
+    <h3>Generador de Contraseñas</h3>
+    <label>Longitud de la contraseña:</label>
+    <InputNumber @bind-Value="passwordLength" Min="5" Max="100" />
 
-<div>
-    <label><InputCheckbox @bind-Value="includeUppercase" /> Mayúsculas</label>
-    <label><InputCheckbox @bind-Value="includeLowercase" /> Minúsculas</label>
-    <label><InputCheckbox @bind-Value="includeNumbers" /> Números</label>
-    <label><InputCheckbox @bind-Value="includeSymbols" /> Símbolos</label>
-</div>
-
-<button @onclick="GeneratePassword">Generar Contraseña</button>
-
-@if (!string.IsNullOrEmpty(generatedPassword))
-{
     <div>
-        <p>Contraseña generada: @generatedPassword</p>
-        <button @onclick="CopyToClipboard">Copiar Contraseña</button>
-        <button @onclick="SavePassword">Guardar Contraseña</button>
+        <label><InputCheckbox @bind-Value="includeUppercase" /> Mayúsculas</label>
+        <label><InputCheckbox @bind-Value="includeLowercase" /> Minúsculas</label>
+        <label><InputCheckbox @bind-Value="includeNumbers" /> Números</label>
+        <label><InputCheckbox @bind-Value="includeSymbols" /> Símbolos</label>
     </div>
-}
 
-@if (savedPasswords.Count > 0)
-{
-    <h4>Contraseñas guardadas:</h4>
-    <ul>
-        @foreach (var password in savedPasswords)
-        {
-            <li>@password</li>
-        }
-    </ul>
-}
+    <button @onclick="GeneratePassword">Generar Contraseña</button>
+
+    @if (!string.IsNullOrEmpty(generatedPassword))
+    {
+        <div>
+            <p>Contraseña generada: @generatedPassword</p>
+            <button @onclick="CopyToClipboard">Copiar Contraseña</button>
+            <button @onclick="SavePassword">Guardar Contraseña</button>
+        </div>
+    }
+
+    <div style="display: flex; justify-content: space-between;">
+        <div style="flex: 1; margin-right: 20px;">
+        </div>
+
+        <div class="saved-passwords">
+            @if (savedPasswords.Count > 0)
+            {
+                <h4>Contraseñas guardadas:</h4>
+                <ul>
+                    @foreach (var password in savedPasswords)
+                    {
+                        <li>@password</li>
+                        <button @onclick="@((e) => CopyToClipboardSaved(password))">Copiar</button>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
 
 @code {
     private int passwordLength = 15;
@@ -54,6 +64,11 @@
     private async Task CopyToClipboard()
     {
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", generatedPassword);
+    }
+
+    private async Task CopyToClipboardSaved(string savedPasword)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", savedPasword);
     }
 
     private void SavePassword()
