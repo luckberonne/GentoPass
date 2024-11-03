@@ -1,6 +1,7 @@
 ﻿@page "/"
 @rendermode InteractiveWebAssembly
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <h3>Generador de Contraseñas</h3>
 <label>Longitud de la contraseña:</label>
@@ -20,7 +21,19 @@
     <div>
         <p>Contraseña generada: @generatedPassword</p>
         <button @onclick="CopyToClipboard">Copiar Contraseña</button>
+        <button @onclick="SavePassword">Guardar Contraseña</button>
     </div>
+}
+
+@if (savedPasswords.Count > 0)
+{
+    <h4>Contraseñas guardadas:</h4>
+    <ul>
+        @foreach (var password in savedPasswords)
+        {
+            <li>@password</li>
+        }
+    </ul>
 }
 
 @code {
@@ -30,6 +43,7 @@
     private bool includeNumbers = false;
     private bool includeSymbols = false;
     private string generatedPassword;
+    private List<string> savedPasswords = new List<string>();
 
     private async Task GeneratePassword()
     {
@@ -40,5 +54,14 @@
     private async Task CopyToClipboard()
     {
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", generatedPassword);
+    }
+
+    private void SavePassword()
+    {
+        if (!string.IsNullOrEmpty(generatedPassword))
+        {
+            savedPasswords.Add(generatedPassword);
+            generatedPassword = string.Empty;
+        }
     }
 }
