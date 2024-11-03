@@ -1,0 +1,44 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@inject HttpClient Http
+
+<h3>Generador de Contraseñas</h3>
+<label>Longitud de la contraseña:</label>
+<InputNumber @bind-Value="passwordLength" Min="5" Max="100" />
+
+<div>
+    <label><InputCheckbox @bind-Value="includeUppercase" /> Mayúsculas</label>
+    <label><InputCheckbox @bind-Value="includeLowercase" /> Minúsculas</label>
+    <label><InputCheckbox @bind-Value="includeNumbers" /> Números</label>
+    <label><InputCheckbox @bind-Value="includeSymbols" /> Símbolos</label>
+</div>
+
+<button @onclick="GeneratePassword">Generar Contraseña</button>
+
+@if (!string.IsNullOrEmpty(generatedPassword))
+{
+    <div>
+        <p>Contraseña generada: @generatedPassword</p>
+        <button @onclick="CopyToClipboard">Copiar Contraseña</button>
+    </div>
+}
+
+@code {
+    private int passwordLength = 15;
+    private bool includeUppercase = true;
+    private bool includeLowercase = true;
+    private bool includeNumbers = false;
+    private bool includeSymbols = false;
+    private string generatedPassword;
+
+    private async Task GeneratePassword()
+    {
+        var response = await Http.GetStringAsync($"api/password/generate?length={passwordLength}&includeUppercase={includeUppercase}&includeLowercase={includeLowercase}&includeNumbers={includeNumbers}&includeSymbols={includeSymbols}");
+        generatedPassword = response;
+    }
+
+    private async Task CopyToClipboard()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", generatedPassword);
+    }
+}
